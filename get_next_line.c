@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: akhomche <akhomche@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/11/22 21:11:55 by akhomche         ###   ########.fr       */
+/*   Updated: 2023/11/23 12:26:39 by ax               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,6 +182,32 @@ void	ft_putstr(char *str)
 
 char	start[5];
 
+void	write_start(char *current, char *start, int	j)
+{
+	int	len;
+	int	x;
+
+	x = 0;
+	len = ft_strlen(current);
+	while(j > 0)
+	{
+		start[x] = current[len - j];
+		x++;
+		j--;
+	}
+	start[x] = '\0';
+}
+
+void	add_start_to_buffer(char *start, char *buffer)
+{
+	if (ft_strlen(start) > 0)
+	{
+		ft_strlcat(buffer, start, sizeof(buffer));
+		ft_bzero(start, sizeof(start));
+	}
+}
+
+
 void	get_next_line(int fd)
 {
 	int		bytesRead;
@@ -189,38 +215,25 @@ void	get_next_line(int fd)
 	char	current[5];
 	int		i;
 	int		j;
-	int		x;
-
 
 	while ((bytesRead = read(fd, current, 4)) > 0)
 	{
 		current[bytesRead] = '\0';
-		if (ft_strlen(start) > 0)
-		{
-			ft_strlcat(buffer, start, sizeof(buffer));
-			ft_bzero(start, sizeof(start));
-		}
+		add_start_to_buffer(start, buffer);
 		ft_strlcat(buffer, current, sizeof(buffer));
 		if (ft_strrchr(current, '\n'))
 		{
 			i = ft_strlen(buffer);
 			j = 0;
-			x = 0;
 			while (--i >= 0 && buffer[i] != '\n')
 			{
 				buffer[i] = 0;
 				j++;
 			}
 			ft_putstr(buffer);
-			while(j > 0)
-			{
-				start[x] = current[ft_strlen(current) - j];
-				x++;
-				j--;
-			}
-			start[x] = '\0';
+			write_start(current, start, j);
 			ft_bzero(buffer, sizeof(buffer));
-			break;
+			break ;
 		}
 	}
 }
