@@ -1,5 +1,8 @@
 {
 	"files.associations": {
-		"stdio.h": "c"
+		"*.excalidraw": "json",
+		"*.excalidrawlib": "json",
+		"stdio.h": "c",
+		"stdlib.h": "c"
 	}
 }
