@@ -6,13 +6,13 @@
 /*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/11/26 19:39:01 by ax               ###   ########.fr       */
+/*   Updated: 2023/12/09 15:25:32 by ax               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*ft_strdup(const char *s)
+char *ft_strdup(const char *s)
 {
 	char	*res;
 	size_t	len;
@@ -32,131 +32,93 @@ char	*ft_strdup(const char *s)
 	return (res);
 }
 
-void	write_start(char *current, char *start, int j)
+char	*handle_file_read(int fd, char *buffer)
 {
-	int	len;
-	int	x;
+	char	*result;
+	int		bytes_read;
+	char	*temp_buffer;
 
-	x = 0;
-	len = ft_strlen(current);
-	while (j > 0)
-	{
-		start[x] = current[len - j];
-		x++;
-		j--;
-	}
-	start[x] = '\0';
-}
-
-int	check_if_end_of_line(char *buffer, char *current, char *start)
-{
-	int			i;
-	int			j;
-
-	if (ft_strrchr(current, '\n'))
-	{
-		i = ft_strlen(buffer);
-		j = 0;
-		while (--i >= 0 && buffer[i] != '\n')
-		{
-			buffer[i] = 0;
-			j++;
-		}
-		ft_putstr(buffer);
-		write_start(current, start, j);
-		return (1);
-	}
-	return (0);
-}
-
-char	*write_one_line(char *src)
-{
-	char	*res;
-	int		i;
-
-	i = 0;
-	res = (char *)malloc(sizeof(char) * ft_strlen(src) + 1);
-	if (!res)
+	temp_buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!temp_buffer)
 		return (NULL);
-	if (ft_strrchr(src, '\n')) {
-		while (src[i] || src[i] != '\n')
+	bytes_read = read(fd, temp_buffer, BUFFER_SIZE);
+	while (bytes_read > 0)
+	{
+		temp_buffer[bytes_read] = '\0';
+		if (ft_strrchr(temp_buffer, '\n'))
 		{
-			res[i] = src[i];
-			i++;
-		}		
+			result = ft_strjoin(buffer, temp_buffer);
+			free(buffer);
+			free(temp_buffer);
+			return (result);
+		}
+		buffer = ft_strjoin(buffer, temp_buffer);
+		bytes_read = read(fd, temp_buffer, BUFFER_SIZE);
 	}
-	res[i] = '\0';
-	return (res);
+	if (ft_strlen(buffer) > 0)
+		return (buffer);
+	return (NULL);
 }
 
-char	*get_next_line_1(int fd)
+char	*fill_line_buffer(int fd, char *storage)
 {
-	static char	start[BUFFER_SIZE + 1];
-	int			bytes_read;
-	char		*buffer;
-	char		current[BUFFER_SIZE + 1];
+	char	*buffer;	
 
-	bytes_read = read(fd, current, BUFFER_SIZE);
-	buffer = (char *)malloc(BUFFER_SIZE);
+	buffer = (char *)malloc(sizeof(char));
 	if (!buffer)
 		return (NULL);
-	while (bytes_read > 0 || (bytes_read == 0 && ft_strlen(buffer) > 0))
+	if (storage)
+		buffer = ft_strdup(storage);
+	if (ft_strrchr(buffer, '\n'))
+		return buffer;
+	return (handle_file_read(fd, buffer));
+}
+
+char	*extract_line_from_buffer(char *line_buffer)
+{
+	char	*left_to_storage;
+	int		i;
+	int		j;
+	int		x;
+	int		len;
+
+	len = ft_strlen(line_buffer);
+	i = 0;
+	while (line_buffer[i] && line_buffer[i] != '\n')
+		i++;
+	i++;
+	left_to_storage = (char *)malloc(sizeof(char) * (len - i + 1));
+	j = 0;
+	x = i;
+	while (line_buffer[i] != '\0')
 	{
-		current[bytes_read] = '\0';
-		if (ft_strlen(start) > 0)
-		{
-			ft_strlcat(buffer, start, sizeof(buffer));
-			ft_bzero(start, sizeof(start));
-		}
-		ft_strlcat(buffer, current, ft_strlen(buffer) + ft_strlen(current) + 1);
-		if (check_if_end_of_line(buffer, current, start))
-			return (ft_strdup(buffer));
-		bytes_read = read(fd, current, BUFFER_SIZE);
+		left_to_storage[j] = line_buffer[i];
+		i++;
+		j++;
 	}
-	free(buffer);
-	return (NULL);
+	left_to_storage[j + 1] = '\0';
+	line_buffer[x] = '\0';
+	return (left_to_storage);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	start[BUFFER_SIZE + 1];
-	int			bytes_read;
+	static char	*storage;
 	char		*buffer;
-	char		current[BUFFER_SIZE + 1];
+	char		*line_buffer;
 
-	if (ft_strlen(start))
-	{
-		ft_putstr("\nHERE\n");
-		ft_putstr(start);
-		ft_putstr("\nHERE\n");
-		ft_putstr(write_one_line(start));
+	if (!fd)
 		return (NULL);
-	}
-
-	bytes_read = read(fd, current, BUFFER_SIZE);
-	buffer = (char *)malloc(BUFFER_SIZE);
-	if (!buffer)
+	line_buffer = fill_line_buffer(fd, storage);
+	if (!line_buffer)
 		return (NULL);
-	while (bytes_read > 0 || (bytes_read == 0 && ft_strlen(buffer) > 0))
-	{
-		current[bytes_read] = '\0';
-		// if (ft_strlen(start) > 0)
-		// {
-		// 	ft_strlcat(buffer, start, sizeof(buffer));
-		// 	ft_bzero(start, sizeof(start));
-		// }
-		// ft_strlcat(buffer, current, ft_strlen(buffer) + ft_strlen(current) + 1);
-		if (check_if_end_of_line(buffer, current, start))
-			return (ft_strdup(buffer));
-		bytes_read = read(fd, current, BUFFER_SIZE);
-	}
-	free(buffer);
-	return (NULL);
+	storage = extract_line_from_buffer(line_buffer);
+	return (line_buffer);
 }
 
-int	main(int argc, char const *argv[])
+int main(int argc, char const *argv[])
 {
-	int		fd;
+	int fd;
 
 	fd = open(argv[1], O_RDWR);
 	if (fd == -1)
@@ -164,11 +126,19 @@ int	main(int argc, char const *argv[])
 		printf("Error while open file\n");
 		exit(1);
 	}
-	printf("RES: %s", get_next_line(fd));
-	printf("RES: %s", get_next_line(fd));
-	// printf("RES: %s", get_next_line(fd));
-	// printf("RES: %s", get_next_line(fd));
-	// printf("RES: %s", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
 	close(fd);
 	return (0);
 }
+

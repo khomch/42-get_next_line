@@ -6,7 +6,7 @@
 /*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/11/26 15:03:21 by ax               ###   ########.fr       */
+/*   Updated: 2023/12/09 11:17:23 by ax               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,28 +34,33 @@ size_t	ft_strlen(const char *str)
 	return (i);
 }
 
-size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
+char	*ft_strjoin(char const *s1, char const *s2)
 {
-	size_t	i;
-	size_t	j;
+	char	*s;
+	size_t	len;
+	int		i;
 
-	i = 0;
-	j = 0;
-	while (i < dstsize && dst[i])
+	if (!s1 || !s2)
+		return (NULL);
+	len = ft_strlen(s1) + (ft_strlen(s2));
+	s = (char *)malloc(sizeof(char) * (len + 1));
+	if (!s)
+		return (NULL);
+	len = 0;
+	while (s1[len])
 	{
+		s[len] = s1[len];
+		len++;
+	}
+	i = 0;
+	while (s2[i])
+	{
+		s[len + i] = s2[i];
 		i++;
 	}
-	while ((i + j + 1) < dstsize && src[j])
-	{
-		dst[i + j] = src[j];
-		j++;
-	}
-	if (i != dstsize)
-	{
-		dst[i + j] = '\0';
-	}
-	return (i + ft_strlen(src));
+	return (s);
 }
+
 
 char	*ft_strrchr(const char *s, int c)
 {
