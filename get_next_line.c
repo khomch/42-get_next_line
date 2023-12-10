@@ -6,31 +6,11 @@
 /*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/12/09 15:25:32 by ax               ###   ########.fr       */
+/*   Updated: 2023/12/09 15:47:17 by ax               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-char *ft_strdup(const char *s)
-{
-	char	*res;
-	size_t	len;
-	size_t	i;
-
-	i = 0;
-	len = ft_strlen(s);
-	res = (char *)malloc(sizeof(char) * (len + 1));
-	if (!res)
-		return (NULL);
-	while (i < len && s[i] != '\0')
-	{
-		res[i] = s[i];
-		i++;
-	}
-	res[i] = '\0';
-	return (res);
-}
 
 char	*handle_file_read(int fd, char *buffer)
 {
@@ -70,7 +50,7 @@ char	*fill_line_buffer(int fd, char *storage)
 	if (storage)
 		buffer = ft_strdup(storage);
 	if (ft_strrchr(buffer, '\n'))
-		return buffer;
+		return (buffer);
 	return (handle_file_read(fd, buffer));
 }
 
@@ -116,9 +96,9 @@ char	*get_next_line(int fd)
 	return (line_buffer);
 }
 
-int main(int argc, char const *argv[])
+int	main(int argc, char const *argv[])
 {
-	int fd;
+	int	fd;
 
 	fd = open(argv[1], O_RDWR);
 	if (fd == -1)

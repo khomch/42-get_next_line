@@ -6,23 +6,11 @@
 /*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/12/09 11:17:23 by ax               ###   ########.fr       */
+/*   Updated: 2023/12/09 15:46:44 by ax               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-void	ft_bzero(void *str, size_t len)
-{
-	unsigned char	*ptr;
-
-	ptr = (unsigned char *)str;
-	while (len--)
-	{
-		*ptr = 0;
-		ptr++;
-	}
-}
 
 size_t	ft_strlen(const char *str)
 {
@@ -61,7 +49,6 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	return (s);
 }
 
-
 char	*ft_strrchr(const char *s, int c)
 {
 	unsigned int	i;
@@ -82,14 +69,22 @@ char	*ft_strrchr(const char *s, int c)
 	return (res);
 }
 
-void	ft_putstr(char *str)
+char	*ft_strdup(const char *s)
 {
-	int	i;
+	char	*res;
+	size_t	len;
+	size_t	i;
 
 	i = 0;
-	while (str[i])
+	len = ft_strlen(s);
+	res = (char *)malloc(sizeof(char) * (len + 1));
+	if (!res)
+		return (NULL);
+	while (i < len && s[i] != '\0')
 	{
-		write(1, &str[i], 1);
+		res[i] = s[i];
 		i++;
 	}
+	res[i] = '\0';
+	return (res);
 }
