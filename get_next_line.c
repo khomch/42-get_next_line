@@ -12,15 +12,42 @@
 
 #include "get_next_line.h"
 
+size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
+{
+	size_t	i;
+	size_t	j;
+
+	i = 0;
+	j = 0;
+	while (i < dstsize && dst[i])
+	{
+		i++;
+	}
+	while ((i + j + 1) < dstsize && src[j])
+	{
+		dst[i + j] = src[j];
+		j++;
+	}
+	if (i != dstsize)
+	{
+		dst[i + j] = '\0';
+	}
+	return (i + ft_strlen(src));
+}
+
 char	*handle_file_read(int fd, char *buffer)
 {
 	char	*result;
 	int		bytes_read;
 	char	*temp_buffer;
+	char	*save_buffer;
 
 	temp_buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!temp_buffer)
+	{
+		free(temp_buffer);
 		return (NULL);
+	}
 	bytes_read = read(fd, temp_buffer, BUFFER_SIZE);
 	while (bytes_read > 0)
 	{
@@ -28,97 +55,144 @@ char	*handle_file_read(int fd, char *buffer)
 		if (ft_strrchr(temp_buffer, '\n'))
 		{
 			result = ft_strjoin(buffer, temp_buffer);
-			free(buffer);
 			free(temp_buffer);
 			return (result);
 		}
-		buffer = ft_strjoin(buffer, temp_buffer);
+		save_buffer = ft_strdup(buffer);
+		buffer = ft_strjoin(save_buffer, temp_buffer);
+		free(temp_buffer);
 		bytes_read = read(fd, temp_buffer, BUFFER_SIZE);
 	}
 	if (ft_strlen(buffer) > 0)
+	{
 		return (buffer);
+	}
 	return (NULL);
 }
 
 char	*fill_line_buffer(int fd, char *storage)
 {
-	char	*buffer;	
+	char	*buffer;
+	char	*res;
 
 	buffer = (char *)malloc(sizeof(char));
 	if (!buffer)
+	{
 		return (NULL);
+	}
 	if (storage)
+	{
 		buffer = ft_strdup(storage);
+		free(storage);
+	}
 	if (ft_strrchr(buffer, '\n'))
 		return (buffer);
-	return (handle_file_read(fd, buffer));
+	res = handle_file_read(fd, buffer);
+	free(buffer);
+	return (res);
 }
 
-char	*extract_line_from_buffer(char *line_buffer)
+char	*get_line_from_buffer(char * line_buffer)
 {
-	char	*left_to_storage;
+	char	*line;
 	int		i;
-	int		j;
-	int		x;
-	int		len;
+	int		y;
 
-	len = ft_strlen(line_buffer);
 	i = 0;
 	while (line_buffer[i] && line_buffer[i] != '\n')
 		i++;
 	i++;
-	left_to_storage = (char *)malloc(sizeof(char) * (len - i + 1));
-	j = 0;
-	x = i;
-	while (line_buffer[i] != '\0')
+	line = (char *)malloc(sizeof(char) * (i));
+	y = 0;
+	while (y < i)
 	{
-		left_to_storage[j] = line_buffer[i];
-		i++;
-		j++;
+		line[y] = line_buffer[y];
+		y++;
 	}
-	left_to_storage[j + 1] = '\0';
-	line_buffer[x] = '\0';
-	return (left_to_storage);
+	line[y] = '\0';
+	return (line);
 }
+
+char	*update_storage(int	line_len, char * line_buffer)
+{
+	char	*storage;
+	int		i;
+	int		y;
+
+	storage = (char *)malloc(sizeof(char *) * (ft_strlen(line_buffer) - line_len + 1));
+	i = line_len;
+	y = 0;
+	while(line_buffer[i])
+	{
+		storage[y] = line_buffer[i];
+		y++;
+		i++;
+	}
+	storage[y] = '\0';
+	return (storage);
+}
+
 
 char	*get_next_line(int fd)
 {
 	static char	*storage;
-	char		*buffer;
 	char		*line_buffer;
+	char		*result;
 
-	if (!fd)
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+	{
+		free(storage);
 		return (NULL);
+	}
 	line_buffer = fill_line_buffer(fd, storage);
 	if (!line_buffer)
 		return (NULL);
-	storage = extract_line_from_buffer(line_buffer);
-	return (line_buffer);
+	result = get_line_from_buffer(line_buffer);
+	storage = update_storage(ft_strlen(result), line_buffer);
+	free(line_buffer);
+	return (result);
 }
 
-int	main(int argc, char const *argv[])
-{
-	int	fd;
+// int	main(int argc, char const *argv[])
+// {
+// 	int	fd;
+// 	char	*res;
 
-	fd = open(argv[1], O_RDWR);
-	if (fd == -1)
-	{
-		printf("Error while open file\n");
-		exit(1);
-	}
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-	close(fd);
-	return (0);
-}
+// 	fd = open(argv[1], O_RDWR);
+// 	if (fd == -1)
+// 	{
+// 		printf("Error while open file\n");
+// 		exit(1);
+// 	}
+// 	res = get_next_line(fd);
+// 	printf("✅ %s\n------------------------------------\n", res);
+// 	free(res);
+// 	res = get_next_line(fd);
+// 	printf("✅ %s\n------------------------------------\n", res);
+// 	free(res);
+// 	res = get_next_line(fd);
+// 	printf("✅ %s\n------------------------------------\n", res);
+// 	free(res);
+// 	// res = get_next_line(fd);
+// 	// printf("✅ %s\n------------------------------------\n", res);
+// 	// free(res);
+// 	// res = get_next_line(fd);
+// 	// printf("✅ %s\n------------------------------------\n", res);
+// 	// res = get_next_line(fd);
+// 	// free(res);
+// 	// printf("✅ %s\n------------------------------------\n", res);
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
+// 	close(fd);
+// 	return (0);
+// }
 
