@@ -6,7 +6,7 @@
 /*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/12/09 15:47:17 by ax               ###   ########.fr       */
+/*   Updated: 2023/12/19 14:25:45 by ax               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,122 +35,103 @@ size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
 	return (i + ft_strlen(src));
 }
 
-char	*handle_file_read(int fd, char *buffer)
+char	*ft_substr(char *s, unsigned int start, size_t len)
 {
-	char	*result;
-	int		bytes_read;
-	char	*temp_buffer;
-	char	*save_buffer;
+	size_t	i;
+	char	*str;
 
-	temp_buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!temp_buffer)
-	{
-		free(temp_buffer);
+	if (!s)
 		return (NULL);
+	if (start > ft_strlen(s))
+		return (malloc(1));
+	if (len > ft_strlen(s + start))
+		len = ft_strlen(s + start);
+	str = malloc((len + 1) * sizeof(char));
+	if (!str)
+		return (NULL);
+	i = 0;
+	while (i < len)
+	{
+		str[i] = s[start + i];
+		i++;
 	}
-	bytes_read = read(fd, temp_buffer, BUFFER_SIZE);
+	str[i] = 0;
+	return (str);
+}
+
+char	*fill_line_buffer(int fd, char *buffer, char *storage)
+{
+	char		*temp_storage_ptr;
+	ssize_t		bytes_read;
+
+	bytes_read = 1;
 	while (bytes_read > 0)
 	{
-		temp_buffer[bytes_read] = '\0';
-		if (ft_strrchr(temp_buffer, '\n'))
+		bytes_read = read(fd, buffer, BUFFER_SIZE);
+		if (bytes_read < 0)
 		{
-			result = ft_strjoin(buffer, temp_buffer);
-			free(temp_buffer);
-			return (result);
+			free(storage);
+			return (NULL);
 		}
-		save_buffer = ft_strdup(buffer);
-		buffer = ft_strjoin(save_buffer, temp_buffer);
-		free(temp_buffer);
-		bytes_read = read(fd, temp_buffer, BUFFER_SIZE);
+		else if (bytes_read == 0)
+			break ;
+		buffer[bytes_read] = '\0';
+		if (!storage)
+			storage = ft_strdup("");
+		temp_storage_ptr = storage;
+		storage = ft_strjoin(temp_storage_ptr, buffer);
+		free(temp_storage_ptr);
+		temp_storage_ptr = NULL;
+		if (ft_strrchr(storage, '\n'))
+			break ;
 	}
-	if (ft_strlen(buffer) > 0)
-	{
-		return (buffer);
-	}
-	return (NULL);
-}
-
-char	*fill_line_buffer(int fd, char *storage)
-{
-	char	*buffer;
-	char	*res;
-
-	buffer = (char *)malloc(sizeof(char));
-	if (!buffer)
-	{
-		return (NULL);
-	}
-	if (storage)
-	{
-		buffer = ft_strdup(storage);
-		free(storage);
-	}
-	if (ft_strrchr(buffer, '\n'))
-		return (buffer);
-	res = handle_file_read(fd, buffer);
-	free(buffer);
-	return (res);
-}
-
-char	*get_line_from_buffer(char * line_buffer)
-{
-	char	*line;
-	int		i;
-	int		y;
-
-	i = 0;
-	while (line_buffer[i] && line_buffer[i] != '\n')
-		i++;
-	i++;
-	line = (char *)malloc(sizeof(char) * (i));
-	y = 0;
-	while (y < i)
-	{
-		line[y] = line_buffer[y];
-		y++;
-	}
-	line[y] = '\0';
-	return (line);
-}
-
-char	*update_storage(int	line_len, char * line_buffer)
-{
-	char	*storage;
-	int		i;
-	int		y;
-
-	storage = (char *)malloc(sizeof(char *) * (ft_strlen(line_buffer) - line_len + 1));
-	i = line_len;
-	y = 0;
-	while(line_buffer[i])
-	{
-		storage[y] = line_buffer[i];
-		y++;
-		i++;
-	}
-	storage[y] = '\0';
 	return (storage);
 }
 
+char	*extract_line_and_update_storage(char *line_buffer)
+{
+	char		*res;
+	ssize_t		i;
+
+	i = 0;
+	while (line_buffer[i] != '\n' && line_buffer[i] != '\0')
+		i++;
+	if (line_buffer[i] == '\0' || line_buffer[1] == '\0')
+		return (NULL);
+	res = ft_substr(line_buffer, i + 1, ft_strlen(line_buffer) - i);
+	if (*res == '\0')
+	{
+		free(res);
+		res = NULL;
+	}
+	line_buffer[i + 1] = '\0';
+	return (res);
+}
 
 char	*get_next_line(int fd)
 {
 	static char	*storage;
-	char		*line_buffer;
-	char		*result;
+	char		*buffer;
+	char		*line;
 
+	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
 	{
 		free(storage);
+		free(buffer);
+		storage = NULL;
+		buffer = NULL;
 		return (NULL);
 	}
-	line_buffer = fill_line_buffer(fd, storage);
-	if (!line_buffer)
+	if (!buffer)
 		return (NULL);
-	result = get_line_from_buffer(line_buffer);
-	storage = update_storage(ft_strlen(result), line_buffer);
-	free(line_buffer);
-	return (result);
+	line = fill_line_buffer(fd, buffer, storage);
+	free(buffer);
+	buffer = NULL;
+	if (!line)
+		return (NULL);
+	storage = extract_line_and_update_storage(line);
+	return (line);
 }
 
 // int	main(int argc, char const *argv[])
@@ -179,20 +160,6 @@ char	*get_next_line(int fd)
 // 	// res = get_next_line(fd);
 // 	// printf("✅ %s\n------------------------------------\n", res);
 // 	// res = get_next_line(fd);
-// 	// free(res);
-// 	// printf("✅ %s\n------------------------------------\n", res);
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
-// 	// printf("✅ %s\n------------------------------------\n", get_next_line(fd));
 // 	close(fd);
 // 	return (0);
 // }
-

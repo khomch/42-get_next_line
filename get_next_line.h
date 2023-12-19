@@ -6,14 +6,14 @@
 /*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/12/09 15:46:43 by ax               ###   ########.fr       */
+/*   Updated: 2023/12/19 14:29:16 by ax               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 42
+#  define BUFFER_SIZE 4
 # endif
 
 # include <stdio.h>
@@ -21,7 +21,6 @@
 # include <unistd.h>
 # include <fcntl.h>
 # include <limits.h>
-
 
 char	*get_next_line(int fd);
 size_t	ft_strlen(const char *str);

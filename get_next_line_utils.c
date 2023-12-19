@@ -6,7 +6,7 @@
 /*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/12/09 15:46:44 by ax               ###   ########.fr       */
+/*   Updated: 2023/12/19 14:29:13 by ax               ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 {
 	char	*s;
 	size_t	len;
-	int		i;
+	size_t	i;
 
 	if (!s1 || !s2)
 		return (NULL);
