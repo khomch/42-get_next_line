@@ -12,6 +12,29 @@
 
 #include "get_next_line.h"
 
+size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
+{
+	size_t	i;
+	size_t	j;
+
+	i = 0;
+	j = 0;
+	while (i < dstsize && dst[i])
+	{
+		i++;
+	}
+	while ((i + j + 1) < dstsize && src[j])
+	{
+		dst[i + j] = src[j];
+		j++;
+	}
+	if (i != dstsize)
+	{
+		dst[i + j] = '\0';
+	}
+	return (i + ft_strlen(src));
+}
+
 char	*ft_substr(char *s, unsigned int start, size_t len)
 {
 	size_t	i;
@@ -20,7 +43,7 @@ char	*ft_substr(char *s, unsigned int start, size_t len)
 	if (!s)
 		return (NULL);
 	if (start > ft_strlen(s))
-		return (ft_strdup(""));
+		return (malloc(1));
 	if (len > ft_strlen(s + start))
 		len = ft_strlen(s + start);
 	str = malloc((len + 1) * sizeof(char));
@@ -45,7 +68,7 @@ char	*fill_line_buffer(int fd, char *buffer, char *storage)
 	while (bytes_read > 0)
 	{
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
-		if (bytes_read == -1)
+		if (bytes_read < 0)
 		{
 			free(storage);
 			return (NULL);
@@ -59,7 +82,7 @@ char	*fill_line_buffer(int fd, char *buffer, char *storage)
 		storage = ft_strjoin(temp_storage_ptr, buffer);
 		free(temp_storage_ptr);
 		temp_storage_ptr = NULL;
-		if (ft_strchr(storage, '\n'))
+		if (ft_strrchr(storage, '\n'))
 			break ;
 	}
 	return (storage);
@@ -92,7 +115,7 @@ char	*get_next_line(int fd)
 	char		*line;
 
 	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
 	{
 		free(storage);
 		free(buffer);
@@ -109,4 +132,34 @@ char	*get_next_line(int fd)
 		return (NULL);
 	storage = extract_line_and_update_storage(line);
 	return (line);
+}
+
+int	main(int argc, char const *argv[])
+{
+	int	fd;
+	char	*res;
+
+	fd = open(argv[1], O_RDWR);
+	if (fd == -1)
+	{
+		printf("Error while open file\n");
+		exit(1);
+	}
+	res = get_next_line(fd);
+	printf("✅ %s\n------------------------------------\n", res);
+	free(res);
+	res = get_next_line(fd);
+	printf("✅ %s\n------------------------------------\n", res);
+	free(res);
+	res = get_next_line(fd);
+	printf("✅ %s\n------------------------------------\n", res);
+	free(res);
+	// res = get_next_line(fd);
+	// printf("✅ %s\n------------------------------------\n", res);
+	// free(res);
+	// res = get_next_line(fd);
+	// printf("✅ %s\n------------------------------------\n", res);
+	// res = get_next_line(fd);
+	close(fd);
+	return (0);
 }
