@@ -10,30 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
-
-size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
-{
-	size_t	i;
-	size_t	j;
-
-	i = 0;
-	j = 0;
-	while (i < dstsize && dst[i])
-	{
-		i++;
-	}
-	while ((i + j + 1) < dstsize && src[j])
-	{
-		dst[i + j] = src[j];
-		j++;
-	}
-	if (i != dstsize)
-	{
-		dst[i + j] = '\0';
-	}
-	return (i + ft_strlen(src));
-}
+#include "get_next_line_bonus.h"
 
 char	*ft_substr(char *s, unsigned int start, size_t len)
 {
@@ -43,7 +20,7 @@ char	*ft_substr(char *s, unsigned int start, size_t len)
 	if (!s)
 		return (NULL);
 	if (start > ft_strlen(s))
-		return (malloc(1));
+		return (ft_strdup("")); 
 	if (len > ft_strlen(s + start))
 		len = ft_strlen(s + start);
 	str = malloc((len + 1) * sizeof(char));
@@ -68,7 +45,7 @@ char	*fill_line_buffer(int fd, char *buffer, char *storage)
 	while (bytes_read > 0)
 	{
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
-		if (bytes_read < 0)
+		if (bytes_read == -1)
 		{
 			free(storage);
 			return (NULL);
@@ -82,7 +59,7 @@ char	*fill_line_buffer(int fd, char *buffer, char *storage)
 		storage = ft_strjoin(temp_storage_ptr, buffer);
 		free(temp_storage_ptr);
 		temp_storage_ptr = NULL;
-		if (ft_strrchr(storage, '\n'))
+		if (ft_strchr(storage, '\n'))
 			break ;
 	}
 	return (storage);
@@ -110,56 +87,26 @@ char	*extract_line_and_update_storage(char *line_buffer)
 
 char	*get_next_line(int fd)
 {
-	static char	*storage;
+	static char	*storage[MAX_NUM_OF_FD];
 	char		*buffer;
 	char		*line;
 
 	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)	
 	{
-		free(storage);
+		free(storage[fd]);
 		free(buffer);
-		storage = NULL;
+		storage[fd] = NULL;
 		buffer = NULL;
 		return (NULL);
 	}
 	if (!buffer)
 		return (NULL);
-	line = fill_line_buffer(fd, buffer, storage);
+	line = fill_line_buffer(fd, buffer, storage[fd]);
 	free(buffer);
 	buffer = NULL;
 	if (!line)
 		return (NULL);
-	storage = extract_line_and_update_storage(line);
+	storage[fd] = extract_line_and_update_storage(line);
 	return (line);
-}
-
-int	main(int argc, char const *argv[])
-{
-	int	fd;
-	char	*res;
-
-	fd = open(argv[1], O_RDWR);
-	if (fd == -1)
-	{
-		printf("Error while open file\n");
-		exit(1);
-	}
-	res = get_next_line(fd);
-	printf("✅ %s\n------------------------------------\n", res);
-	free(res);
-	res = get_next_line(fd);
-	printf("✅ %s\n------------------------------------\n", res);
-	free(res);
-	res = get_next_line(fd);
-	printf("✅ %s\n------------------------------------\n", res);
-	free(res);
-	// res = get_next_line(fd);
-	// printf("✅ %s\n------------------------------------\n", res);
-	// free(res);
-	// res = get_next_line(fd);
-	// printf("✅ %s\n------------------------------------\n", res);
-	// res = get_next_line(fd);
-	close(fd);
-	return (0);
 }

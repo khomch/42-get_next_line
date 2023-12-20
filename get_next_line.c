@@ -20,7 +20,7 @@ char	*ft_substr(char *s, unsigned int start, size_t len)
 	if (!s)
 		return (NULL);
 	if (start > ft_strlen(s))
-		return (ft_strdup(""));
+		return (ft_strdup("")); 
 	if (len > ft_strlen(s + start))
 		len = ft_strlen(s + start);
 	str = malloc((len + 1) * sizeof(char));
@@ -92,7 +92,7 @@ char	*get_next_line(int fd)
 	char		*line;
 
 	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)	
 	{
 		free(storage);
 		free(buffer);
