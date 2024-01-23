@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line_bonus.h                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: akhomche <akhomche@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/12/20 11:55:37 by ax               ###   ########.fr       */
+/*   Updated: 2024/01/22 14:28:23 by akhomche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 # ifndef BUFFER_SIZE
 #  define BUFFER_SIZE 42
 # endif
-# define MAX_NUM_OF_FD 10240
+# define MAX_NUM_OF_FD 1024
 
 # include <stdio.h>
 # include <stdlib.h>

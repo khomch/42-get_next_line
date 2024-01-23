@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ax <ax@student.42.fr>                      +#+  +:+       +#+        */
+/*   By: akhomche <akhomche@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:02:17 by akhomche          #+#    #+#             */
-/*   Updated: 2023/12/20 11:56:03 by ax               ###   ########.fr       */
+/*   Updated: 2024/01/22 14:28:21 by akhomche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,16 @@
 char	*ft_substr(char *s, unsigned int start, size_t len)
 {
 	size_t	i;
+	size_t	s_start_len;
 	char	*str;
 
 	if (!s)
 		return (NULL);
 	if (start > ft_strlen(s))
 		return (ft_strdup(""));
-	if (len > ft_strlen(s + start))
-		len = ft_strlen(s + start);
+	s_start_len = ft_strlen(s + start);
+	if (len > s_start_len)
+		len = s_start_len;
 	str = malloc((len + 1) * sizeof(char));
 	if (!str)
 		return (NULL);
@@ -36,7 +38,7 @@ char	*ft_substr(char *s, unsigned int start, size_t len)
 	return (str);
 }
 
-char	*fill_line_buffer(int fd, char *buffer, char *storage)
+static char	*fill_line(int fd, char *buffer, char *storage)
 {
 	char		*temp_storage_ptr;
 	ssize_t		bytes_read;
@@ -65,7 +67,7 @@ char	*fill_line_buffer(int fd, char *buffer, char *storage)
 	return (storage);
 }
 
-char	*extract_line_and_update_storage(char *line_buffer)
+static char	*update_line_and_set_storage(char *line_buffer)
 {
 	char		*res;
 	ssize_t		i;
@@ -73,7 +75,7 @@ char	*extract_line_and_update_storage(char *line_buffer)
 	i = 0;
 	while (line_buffer[i] != '\n' && line_buffer[i] != '\0')
 		i++;
-	if (line_buffer[i] == '\0' || line_buffer[1] == '\0')
+	if (line_buffer[i] == '\0')
 		return (NULL);
 	res = ft_substr(line_buffer, i + 1, ft_strlen(line_buffer) - i);
 	if (*res == '\0')
@@ -102,11 +104,11 @@ char	*get_next_line(int fd)
 	}
 	if (!buffer)
 		return (NULL);
-	line = fill_line_buffer(fd, buffer, storage[fd]);
+	line = fill_line(fd, buffer, storage[fd]);
 	free(buffer);
 	buffer = NULL;
 	if (!line)
 		return (NULL);
-	storage[fd] = extract_line_and_update_storage(line);
+	storage[fd] = update_line_and_set_storage(line);
 	return (line);
 }
